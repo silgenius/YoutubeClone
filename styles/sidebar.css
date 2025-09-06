@@ -14,6 +14,10 @@
     height: 60px;
     margin-top: 5px;
     background-color: white;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
 }
 
 .sidebar-link:hover {
@@ -22,15 +26,11 @@
 }
 
 .sidebar-icon {
-    height: 30px;
-    width: 30px;
-    margin-left: 5px;
-    margin-top: 5px;
-    padding: 5px;
+    height: 23px;
+    width: 23px;
 }
 
 .sidebar-text {
+    margin-top: 5px;
     font-size: 10px;
-    margin-left: 6px;
-    margin-right: 1px;
 }

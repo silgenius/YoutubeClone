@@ -19,29 +19,23 @@
 }
 
 .left-header {
-    /* background-color: blue; */
     width: 250px;
     gap: 23px;
+    margin-left: 30px;
 }
 
 .ham-menu {
-  margin-left: 5px;
-  height: 34px;
+  height: 25px;
   user-select: none;
 }
 
-/* .ham-menu:hover {
-  background-color: (198, 198, 198);
-} */
-
 .yt-logo {
-  height: 32px;
+  height: 28px;
   user-select: none;
 }
 
 .middle-header {
     flex: 1;
-    /* background-color: yellow; */
     margin-left: 30px;
     margin-right: 30px;
     padding: 20px;
@@ -102,6 +96,7 @@
 .right-header {
     width: 220px;
     justify-content: space-between;
+    margin-right: 30px;
 }
 
 .notification-btn,
@@ -123,7 +118,7 @@
   width: auto;
   display: flex;
   align-items: center;
-  border-radius: 55px;
+  border-radius: 50px;
 }
 
 .create-icon {
