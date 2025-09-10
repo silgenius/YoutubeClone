@@ -1,4 +1,4 @@
-const formatTime = (prevTime) => {
+export const formatTime = (prevTime) => {
     const now = new Date();
     const timeDifference = now - prevTime;
     const seconds = Math.floor((timeDifference / 1000) % 60);
@@ -10,7 +10,7 @@ const formatTime = (prevTime) => {
     })
 }
 
-const formatDuration = duration => {
+export const formatDuration = duration => {
     const hours = Math.floor(duration / 3600);
     duration -= hours * 3600
     const minutes = Math.floor(duration / 60);
@@ -20,4 +20,4 @@ const formatDuration = duration => {
     })
 }
 
-const fileSize = size => Math.floor(size / (1024 * 1024));
+export const fileSize = size => Math.floor(size / (1024 * 1024));
