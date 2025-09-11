@@ -4,3 +4,4 @@ test.html
 thumbnails/*
 profile/*
 subtitles/*
+server/.env
