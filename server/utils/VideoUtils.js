@@ -4,14 +4,23 @@ import fs from 'fs/promises';
 import ffmpeg from 'fluent-ffmpeg';
 import ffmpegStatic from 'ffmpeg-static';
 import ffprobeStatic from 'ffprobe-static';
+import { config } from 'dotenv';
 
 import { fileSize, formatDuration, formatTime } from './FormatterUtils.js';
 
 ffmpeg.setFfmpegPath(ffmpegStatic);
 ffmpeg.setFfprobePath(ffprobeStatic.path);
 
-const serverUrl = 'http://192.168.0.200'
-const serverPort = '3000'
+config();
+
+export const defaultFolderPath = process.env.defaultFolderPath;
+const defaultThumbnailPath = process.env.defaultThumbnailPath;
+const serverUrl = process.env.serverUrl;
+const serverPort = process.env.serverPort;
+
+export const videoNames = await retrieveVideos(defaultFolderPath);
+const data = await videoDetails(defaultFolderPath, videoNames);
+console.log(data[0]);
 
 export async function retrieveVideos (folderPath) {
     const videoXtension = ['.mp4', '.mkv', '.avi', '.mov'];
@@ -31,7 +40,7 @@ export async function retrieveVideos (folderPath) {
 
 export async function videoDetails(folderPath, videoNames) {
     const videoDetailsPromises = videoNames.map(async (videoName) => {
-        const videoPath = path.join(folderPath, videoName)
+        const videoPath = path.resolve(folderPath, videoName)
 
         const metadata = await new Promise((resolve, reject) => {
             ffmpeg.ffprobe(videoPath, (err, metadata) => {
@@ -42,8 +51,8 @@ export async function videoDetails(folderPath, videoNames) {
 
         const stats = await fs.stat(videoPath);
 
-        const unixStylePath = metadata.format.filename.replace(/\\/g, '/');
-        const plainPath = `${unixStylePath.split('.', 3).pop()}.${videoName.split('.').pop()}`
+        const thumbnailRelativePath = path.relative('./', `${defaultThumbnailPath}/${videoName}-thumbnail.png`).replace(/\\/g, '/');
+        const fileRelativePath = path.relative('./', metadata.format.filename).replace(/\\/g, '/')
         const data = {
             metadata: {
                 codec_name: metadata.streams[0].codec_name,
@@ -54,13 +63,18 @@ export async function videoDetails(folderPath, videoNames) {
             },
             format: {
                 size: metadata.format.size,
-                filesize: fileSize(metadata.format.size),
+                MBSize: fileSize(metadata.format.size),
                 filename: videoName,
-                location: metadata.format.filename,
-                unixStylePath,
-                plainPath: plainPath,
-                url: `${serverUrl}:${serverPort}${plainPath}`,
-                thumbnail: `thumbnails/${videoName}-thumbnail.png` || null,
+                location: metadata.format.filename.replace(/\\/g, '/'),
+                relativePath: fileRelativePath,
+                url: `${serverUrl}:${serverPort}/${fileRelativePath.split('.', 3).pop()}`,
+                thumbnail: {
+                    location: path.resolve(defaultThumbnailPath, `${videoName}-thumbnail.png`).replace(/\\/g, '/'),
+                    relativePath: thumbnailRelativePath,
+                    url: `${serverUrl}:${serverPort}${thumbnailRelativePath.split('.', 3).pop()}` || null,
+                },
+                description: metadata.format.tags.description || "",
+                title: metadata.format.tags.title || "",
             },
             duration: formatDuration(metadata.format.duration),
             createdAt: formatTime(stats.birthtime),
@@ -72,12 +86,9 @@ export async function videoDetails(folderPath, videoNames) {
     return Promise.all(videoDetailsPromises)
 }
 
-export const folderPath = '../videos'
-export const videoNames = await retrieveVideos(folderPath);
-
 (async function generateThumbnails(videoNames) {
     const thumbnailPromises = videoNames.map(async (videoName) => {
-        const videoPath = path.join(folderPath, videoName)
+        const videoPath = path.resolve(defaultFolderPath, videoName)
         await new Promise((resolve, reject) => {
             ffmpeg(videoPath)
             .on('end', () => {
@@ -90,7 +101,7 @@ export const videoNames = await retrieveVideos(folderPath);
                 count: 1,
                 timemarks: ['15'],
                 filename: `${videoName}-thumbnail.png`,
-                folder: `../thumbnails`,                
+                folder: defaultThumbnailPath,                
             })
         })
     })
